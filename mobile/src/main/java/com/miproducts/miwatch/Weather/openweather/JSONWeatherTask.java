@@ -66,10 +66,16 @@ public class JSONWeatherTask extends AsyncTask<String,Void,String> {
         this.mContext = mContext;
         this.mGoogleApiClient = mGoogleApiClient;
         this.httpClient = new WeatherHttpClient();
-        this.locationToFill = null;
+
+        this.locationToFill = new WeatherLocation();
+        locationToFill.setZipcode(mSettingsManager.getZipCode());
+        locationToFill.setState(mSettingsManager.getState());
+        locationToFill.setCity(mSettingsManager.getTown());
+
         this.dbHelper = new WeatherLocationDbHelper(mContext);
         // indicate we are from a Service and not an Activity (our app is not present on the screen.)
         this.fromActivity = false;
+        changeSelected = false;
     }
 
 
@@ -220,8 +226,9 @@ public class JSONWeatherTask extends AsyncTask<String,Void,String> {
 
         if(changeSelected){
             // tell
-            //((MiDigitalWatchFaceCompanionConfigActivity)mContext).invalidateAdapter();
+            ((MiDigitalWatchFaceCompanionConfigActivity)mContext).invalidateAdapter();
         }
+
         Log.d(TAG, "onPostExecute");
     }
 
@@ -285,6 +292,7 @@ public class JSONWeatherTask extends AsyncTask<String,Void,String> {
                     mSettingsManager.saveState(locationToFill.getState());
                     mSettingsManager.saveTown(locationToFill.getCity());
                 }
+                sendHandledTemperatureToWatch(String.valueOf(locationToFill.getTemperature()));
             }
             // we caem from Config
             else {

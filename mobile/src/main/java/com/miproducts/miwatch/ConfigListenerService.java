@@ -72,6 +72,7 @@ public class ConfigListenerService extends WearableListenerService
             }
     }
     private void getTemp() {
+
         JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApi);
         task.execute();
     }
