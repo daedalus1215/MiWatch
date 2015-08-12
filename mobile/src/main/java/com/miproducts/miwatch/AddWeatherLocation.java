@@ -131,7 +131,7 @@ public class AddWeatherLocation extends Activity{
                     weatherLocation.setState(SettingsManager.NOTHING_SAVED);
                     weatherLocation.setCity((SettingsManager.NOTHING_SAVED));
 
-                    JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApiClient,weatherLocation,true,false);
+                    JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApiClient,weatherLocation,false,false);
                     task.execute();
 
                 }
@@ -158,7 +158,7 @@ public class AddWeatherLocation extends Activity{
 
                     log("town = " + town);
                     log("state = " + state);
-                    JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApiClient, weatherLocation, true, true);
+                    JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApiClient, weatherLocation, false, true);
                     task.execute();
                 }
             }

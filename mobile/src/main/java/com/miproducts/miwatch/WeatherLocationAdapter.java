@@ -85,8 +85,6 @@ public class WeatherLocationAdapter extends BaseAdapter{
 
             // whats currently selected.
         if((mSettingsMananger.getTown().equals(mLocations.get(position).getCity())&& mSettingsMananger.getState().equals(mLocations.get(position).getState()))){
-            tvSelected.setText("Currently Selected");
-        }else {
             if(mSettingsMananger.getZipCode().equals(mLocations.get(position).getZipcode())){
                 tvSelected.setText("Currently Selected");
             }

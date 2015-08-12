@@ -1,5 +1,7 @@
 package com.miproducts.miwatch.Container;
 
+import android.util.Log;
+
 /**
  * This will store
  * 1. zipcode of a location the user wanted to find the weather of.
@@ -8,6 +10,7 @@ package com.miproducts.miwatch.Container;
  * Created by ladam_000 on 8/1/2015.
  */
 public class WeatherLocation {
+    private static final String TAG = "WeatherLocation";
     private int temperature;
     private String zipcode;
     private String city;
@@ -82,5 +85,41 @@ public class WeatherLocation {
     }
     public void setState(String state) {
         this.state = state;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        WeatherLocation wObject = (WeatherLocation) o;
+        // city
+        if(!getCity().equals(wObject.getCity())){
+            log("WeatherLocations dont equal");
+            return false;
+        }
+        // state
+        if(!getState().equals(wObject.getState()))
+        {
+            log("WeatherLocations dont equal");
+            return false;
+        }
+        // zipcode
+        if(!getZipcode().equals(wObject.getZipcode()))
+        {
+            log("WeatherLocations dont equal");
+            return false;
+        }
+
+        Log.d(TAG, "they equal");
+        log("first Object state " +getState() );
+        log("first Object town " +getCity() );
+        log("first Object zip " + getZipcode() );
+
+        log("2nd Object state " +wObject.getState() );
+        log("2nd Object town " +wObject.getCity() );
+        log("2nd Object zip " + wObject.getZipcode() );
+        return true;
+    }
+
+    private void log(String s) {
+       Log.d(TAG, s);
     }
 }

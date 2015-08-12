@@ -92,14 +92,13 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
         });
 
         lvLocations = (ListView) findViewById(R.id.lvLocations);
-        //TODO do this in start might not need it here anymore updateUI();
         lvLocations.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 getTemp(((WeatherLocationAdapter) lvLocations.getAdapter()).getItem(position));
             }
         });
-        //TODO make sure no issue if user doesnt already have weatherLocations saved/
+
         /*
         // check if we got any in the DB if so update them
         List<WeatherLocation> weatherLocs = dbHelper.getAllWeatherLocations();
@@ -107,7 +106,7 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
             new JSONWeatherTask(this, mSettingsManager, mGoogleApiClient, weatherLoc,false).execute();
         }*/
 
-        checkIfFirstTimeRunning();
+       // checkIfFirstTimeRunning();
     }
 
     private void checkIfFirstTimeRunning() {
@@ -165,10 +164,12 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
         JSONWeatherTask task;
         // there was no zipcode so we instruct to handle like its from town and state
         if(weatherLocation.getZipcode().equals(SettingsManager.NOTHING_SAVED)){
+            log("get temp there was no zipcode");
             task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,true, true);
         }
         // there was zipcode
         else {
+            log("get temp there was a zipcode");
             task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,true, false);
 
         }
@@ -196,5 +197,9 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
     private void log(String s) {
         Log.d(TAG, s);
 
+    }
+
+    public void invalidateAdapter() {
+        mWeatherLocationAdapter.notifyDataSetChanged();
     }
 }
