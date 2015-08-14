@@ -117,10 +117,6 @@ public class AddWeatherLocation extends Activity{
         ibCurrentLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO 1. current geolocatio to get weather stuff.
-                // TODO 2. add it to our db.
-                //TODO 3. when done go back to last activity.
-
                 //TODO need a better check for whether this is an Integer or String.
                 // CHECK IF IT HAS DIGITS
                 if (etSearchPlaces.getText().toString().contains("0")) {
@@ -131,7 +127,7 @@ public class AddWeatherLocation extends Activity{
                     weatherLocation.setState(SettingsManager.NOTHING_SAVED);
                     weatherLocation.setCity((SettingsManager.NOTHING_SAVED));
 
-                    JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApiClient,weatherLocation,false,false);
+                    JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApiClient,weatherLocation,false);
                     task.execute();
 
                 }
@@ -149,7 +145,8 @@ public class AddWeatherLocation extends Activity{
                     // isolate the town and state.
                     String town = etSearchPlaces.getText().toString().substring(0, comma);
                     String state = etSearchPlaces.getText().toString().substring(comma + 1, etSearchPlaces.length());
-
+                    // remove the space.
+                    state = state.replace(" ","");
                     // northing saved for zipcode
                     weatherLocation.setZipcode(SettingsManager.NOTHING_SAVED);
 
@@ -158,7 +155,7 @@ public class AddWeatherLocation extends Activity{
 
                     log("town = " + town);
                     log("state = " + state);
-                    JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApiClient, weatherLocation, false, true);
+                    JSONWeatherTask task = new JSONWeatherTask(getApplicationContext(), mSettingsManager, mGoogleApiClient, weatherLocation, true);
                     task.execute();
                 }
             }

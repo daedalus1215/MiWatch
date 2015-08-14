@@ -154,7 +154,7 @@ public class EventMod extends View {
                     // no adjustments if we are animating
                     if(!isAnimating) {
                         //log("moving");
-                        xMove = event.getX() + X_ORIGINAL_POSITION;
+                        xMove = event.getX() -xDown;
                         xOffsetTouch = xMove - xDown;
                         isDragging = true;
                         xText = (int) xOffsetTouch;

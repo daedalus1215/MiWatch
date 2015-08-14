@@ -99,12 +99,15 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
             }
         });
 
-        /*
+
         // check if we got any in the DB if so update them
         List<WeatherLocation> weatherLocs = dbHelper.getAllWeatherLocations();
-        for(WeatherLocation weatherLoc : weatherLocs){
-            new JSONWeatherTask(this, mSettingsManager, mGoogleApiClient, weatherLoc,false).execute();
-        }*/
+        if(weatherLocs != null){
+            for(WeatherLocation weatherLoc : weatherLocs){
+               new JSONWeatherTask(this, mSettingsManager, mGoogleApiClient, weatherLoc,false).execute();
+            }
+
+        }
 
        // checkIfFirstTimeRunning();
     }
@@ -140,16 +143,10 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
 
     }
 
-    private void addToDatabase(WeatherLocation weatherLocation) {
-        dbHelper.addLocation(weatherLocation);
-        updateUI();
-
-    }
-
-
     public void updateUI() {
         List<WeatherLocation> savedList = dbHelper.getAllWeatherLocations();
         // TESTING PURPOSES - savedList.add(new WeatherLocation(72, "04005", "Biddeford"));
+        if(savedList != null)
         if(savedList.size() > 0){
             mWeatherLocationAdapter = new WeatherLocationAdapter(savedList, this, R.layout.view_weather_location);
             lvLocations.setAdapter(mWeatherLocationAdapter);
@@ -165,12 +162,12 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
         // there was no zipcode so we instruct to handle like its from town and state
         if(weatherLocation.getZipcode().equals(SettingsManager.NOTHING_SAVED)){
             log("get temp there was no zipcode");
-            task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,true, true);
+            task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,true);
         }
         // there was zipcode
         else {
             log("get temp there was a zipcode");
-            task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,true, false);
+            task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,true);
 
         }
         task.execute();
