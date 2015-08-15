@@ -146,7 +146,7 @@ public class EventMod extends View {
                     //log("down");
                     // no need to move view if animating.
                     if(!isAnimating)
-                        xDown = event.getX() + X_ORIGINAL_POSITION;
+                        xDown = event.getX();
 
                     return true;
 
@@ -154,15 +154,15 @@ public class EventMod extends View {
                     // no adjustments if we are animating
                     if(!isAnimating) {
                         //log("moving");
-                        xMove = event.getX() -xDown;
+                        xMove = event.getX();
                         xOffsetTouch = xMove - xDown;
                         isDragging = true;
                         xText = (int) xOffsetTouch;
                         //log("position of xText == " + xText);
                         mHudView.invalidate();
                         // if finger has dragged forward or backwards enough to instigate a "EventChange"
-                        if(xText > EVENT_FORWARD_THRESHOLD + X_ORIGINAL_POSITION
-                                || xText < EVENT_BACKWARD_THRESHOLD - X_ORIGINAL_POSITION){
+                        if(xOffsetTouch > 50
+                                || xOffsetTouch < -50){
                             isAnimating = true;
                             fingerOff();
                         }
@@ -198,14 +198,14 @@ public class EventMod extends View {
         if(isDragging){
             isDragging = false;
             // View was dragged far enough to animate into the next Event.
-            if(xText < EVENT_BACKWARD_THRESHOLD - X_ORIGINAL_POSITION ){
+            if(xOffsetTouch < -50){
                 //log("next Event forward");
                 animateChangeInEvent(true);
                 return;
 
             }
             // finger went far enough to go backwards
-            else if(xText > EVENT_FORWARD_THRESHOLD + X_ORIGINAL_POSITION){
+            else if(xOffsetTouch > 50){
                 log("next Event backwards.");
                 animateChangeInEvent(false);
                 return;
