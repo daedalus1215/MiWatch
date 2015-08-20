@@ -14,6 +14,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Wearable;
 import com.miproducts.miwatch.AutoComplete.CustomAutoCompleteTextView;
 import com.miproducts.miwatch.Container.WeatherLocation;
+import com.miproducts.miwatch.Database.WeatherLocationDbHelper;
 import com.miproducts.miwatch.Weather.openweather.JSONWeatherTask;
 import com.miproducts.miwatch.utilities.CSVReader;
 import com.miproducts.miwatch.utilities.SettingsManager;
@@ -36,7 +37,9 @@ public class AddWeatherLocation extends Activity{
     private AutoCompleteTextView etSearchPlaces;
     private SettingsManager mSettingsManager;
     private GoogleApiClient mGoogleApiClient;
-    List<String[]> list;
+   // List<WeatherLocation> list;
+    //WeatherLocationDbHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,12 +52,16 @@ public class AddWeatherLocation extends Activity{
                 .build();
 
         initViewObjects();
+        //dbHelper = new WeatherLocationDbHelper(this);
+        //list = dbHelper.getAllWeatherLocations();
        // parseCityAndStateCSV();
     }
-
+/**
     private void parseCityAndStateCSV() {
         String next[] = {};
-        list = new ArrayList<String[]>();
+       // list = new ArrayList<WeatherLocation>();
+
+
 
         try {
             CSVReader reader = new CSVReader(new InputStreamReader(getAssets().open("citiesstateszipcodes.csv")));
@@ -69,6 +76,7 @@ public class AddWeatherLocation extends Activity{
         } catch (IOException e) {
             e.printStackTrace();
         }finally {
+
             for(int i = 0; i < list.size(); i++){
                 Log.d(TAG, list.get(i)[2].toString());
             }
@@ -86,7 +94,7 @@ public class AddWeatherLocation extends Activity{
             String[] from = {"town", "state"};
             int[] to = {R.id.tvTown, R.id.tvState};
 
-            SimpleAdapter adapter = new SimpleAdapter(this, aList, R.layout.auto_complete_text_view, from, to);
+            SimpleAdapter adapter = new SimpleAdapter(this, list, R.layout.auto_complete_text_view, from, to);
 
             //etSearchPlaces.addTextChangedListener(new );
             customTextView.setAdapter(adapter);
@@ -94,7 +102,7 @@ public class AddWeatherLocation extends Activity{
         }
 
     }
-
+*/
 
     /* Initialize View Objects */
     private void initViewObjects() {
@@ -144,11 +152,14 @@ public class AddWeatherLocation extends Activity{
                     }
                     // isolate the town and state.
                     String town = etSearchPlaces.getText().toString().substring(0, comma);
+                    town = town.replace(" ", "+");
                     String state = etSearchPlaces.getText().toString().substring(comma + 1, etSearchPlaces.length());
                     // remove the space.
                     state = state.replace(" ","");
+
                     // northing saved for zipcode
                     weatherLocation.setZipcode(SettingsManager.NOTHING_SAVED);
+
 
                     weatherLocation.setCity(town);
                     weatherLocation.setState(state);

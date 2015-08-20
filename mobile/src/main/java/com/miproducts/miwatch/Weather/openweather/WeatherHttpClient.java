@@ -38,7 +38,8 @@ public class WeatherHttpClient {
 
         // no zipcode
         if(weatherLocation.getZipcode().equals(SettingsManager.NOTHING_SAVED)){
-            String town = weatherLocation.getCity();
+            // incase the town had a space in its name. example: South Portland.
+            String town = weatherLocation.getCity().replace(" ", "+");
             String state = weatherLocation.getState();
             url = BASE_TOWN_STATE + town + "," + state + ",us";
         }else {

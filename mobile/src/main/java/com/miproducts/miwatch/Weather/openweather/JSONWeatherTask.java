@@ -7,6 +7,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataMap;
@@ -120,7 +121,9 @@ public class JSONWeatherTask extends AsyncTask<String,Void,String> {
         // check zipcode's integrity
         if(!isZipCodeValid(locationToFill.getZipcode())) return ERROR_ZIP;
         //TODO assume all checks are done on zipcode and states/cities
-        sendHttpRequest(locationToFill);
+        if(sendHttpRequest(locationToFill) == ERROR_URL){
+            return ERROR_ZIP;
+        }
 
         log("DO_IN_BACKGROUND_ENDS");
         return null;
@@ -153,28 +156,31 @@ public class JSONWeatherTask extends AsyncTask<String,Void,String> {
         // by default result should return a null - unless there was an issue.
         if(result != null){
             if(result.equals(ERROR_ZIP)){
-                Toast.makeText(mContext, "Not proper zipcode!", Toast.LENGTH_LONG).show();
+                //Toast.makeText(mContext, "Not proper zipcode!", Toast.LENGTH_LONG).show();
 
+                //TODO need to make sure we figure out properly what we got here. whether zipcode or String.
+                Toast toasting = Toast.makeText(mContext, "Not a proper town,state or zipcode!", Toast.LENGTH_LONG);
+                toasting.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+                toasting.show();
                 return;
             }else if(result.equals(ERROR_ONLINE)){
-                Toast.makeText(mContext, "Not online!", Toast.LENGTH_LONG).show();
+
+                Toast toasting = Toast.makeText(mContext, "Not Online", Toast.LENGTH_LONG);
+                toasting.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+                toasting.show();
 
             }
 
         }
-        //TODO TEST!!!@
-        if(changeSelected){
             // not if we are coming from AddLocation
             if(mContext instanceof  MiDigitalWatchFaceCompanionConfigActivity){
+                log("mContext is a instance of MiDidigitalWatchFaceConfigActivity");
              ((MiDigitalWatchFaceCompanionConfigActivity) mContext).invalidateAdapter();
-            }
-
-        }
+            }else log("mContext is a instance - NOT! ");
+       // }
 
         Log.d(TAG, "onPostExecute");
     }
-
-    //TODO clean up
     private int sendHttpRequest(WeatherLocation locationToFill) {
 
         String result = httpClient.getWeatherData(locationToFill);
@@ -242,8 +248,6 @@ public class JSONWeatherTask extends AsyncTask<String,Void,String> {
                 // update the database because we already have this zipcode
                 dbHelper.updateTemperatureAndTime(locationToFill);
 
-
-
                 // send this to the MainCompanionActivity to send it off to wearable. -
                 Intent sendDegreesIntent = new Intent(Consts.BROADCAST_DEGREE);
                 sendDegreesIntent.putExtra(Consts.KEY_BROADCAST_DEGREE, tempInFah);
@@ -252,6 +256,7 @@ public class JSONWeatherTask extends AsyncTask<String,Void,String> {
 
             return tempInFah;
         }else {
+            log("should spit out something");
             return ERROR_URL;
         }
 
@@ -259,11 +264,13 @@ public class JSONWeatherTask extends AsyncTask<String,Void,String> {
 
 
     private boolean resultIsValid(String result) {
-        if(result == null)
+        if(result == null){
+            log("check validity " + !result.contains("Not found city"));
             return false;
+        }
         log("check validity " + !result.contains("Not found city"));
         //TODO check validity
-        // we will get not found city if this was not a accurate zipcode.
+        // we will get not found city if this returned no result.
         return !result.contains("Not found city");
 
     }

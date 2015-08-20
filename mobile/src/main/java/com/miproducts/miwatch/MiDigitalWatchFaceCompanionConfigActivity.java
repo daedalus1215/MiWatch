@@ -1,19 +1,31 @@
 package com.miproducts.miwatch;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataMap;
+import com.miproducts.miwatch.AutoComplete.TestAutoCompleteActivity;
 import com.miproducts.miwatch.utilities.CSVReader;
 import com.miproducts.miwatch.Database.WeatherLocationDbHelper;
 import com.miproducts.miwatch.Weather.openweather.JSONWeatherTask;
@@ -36,7 +48,7 @@ import java.util.List;
  * 5.
  * Created by larry on 7/2/15.
  */
-public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
+public class MiDigitalWatchFaceCompanionConfigActivity extends Activity{
     private static final String TAG = "ConfigActivity";
 
     private GoogleApiClient mGoogleApiClient;
@@ -51,6 +63,10 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
 
     private WeatherLocationDbHelper dbHelper;
     private ImageButton FAB;
+    //toolbar stuff
+    EditText etSearchPlaces;
+    ImageButton ibSearch;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,47 +93,91 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
                 new SendToDataLayerThread(Consts.PHONE_TO_WEARABLE_PATH, dataMap, mGoogleApiClient).start();
             }
         };
-
+/*
 
         FAB = (ImageButton) findViewById(R.id.imageButton);
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // lets go to the new Activity.
-                Intent intentToAddWeatherLocation = new Intent(MiDigitalWatchFaceCompanionConfigActivity.this,AddWeatherLocation.class);
+                //Intent intentToAddWeatherLocation = new Intent(MiDigitalWatchFaceCompanionConfigActivity.this,AddWeatherLocation.class);
+                //TETS
+                Intent intentToAddWeatherLocation = new Intent(MiDigitalWatchFaceCompanionConfigActivity.this,TestAutoCompleteActivity.class);
+
                 startActivity(intentToAddWeatherLocation);
 
 
             }
         });
-
+*/
         lvLocations = (ListView) findViewById(R.id.lvLocations);
         lvLocations.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                getTemp(((WeatherLocationAdapter) lvLocations.getAdapter()).getItem(position));
+                getTemp(((WeatherLocationAdapter) lvLocations.getAdapter()).getItem(position), true);
+            }
+        });
+ // TODO CLEAN UP
+
+       updateUI();
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        etSearchPlaces = (EditText) toolbar.findViewById(R.id.etWeatherLocation);
+
+        ibSearch = (ImageButton) toolbar.findViewById(R.id.ibSearch);
+        ibSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etSearchPlaces.setVisibility(View.VISIBLE);
+                v.setVisibility(View.GONE);
+                etSearchPlaces.setShowSoftInputOnFocus(true);
             }
         });
 
 
-        // check if we got any in the DB if so update them
-        List<WeatherLocation> weatherLocs = dbHelper.getAllWeatherLocations();
-        if(weatherLocs != null){
-            for(WeatherLocation weatherLoc : weatherLocs){
-               new JSONWeatherTask(this, mSettingsManager, mGoogleApiClient, weatherLoc,false).execute();
-            }
+        etSearchPlaces.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                Log.d(TAG, "onKey");
 
+                //TODO this is probably too much work and will kill app!
+                // dont want to fetch it if we are doing something else here.
+                if (event.getAction() == KeyEvent.KEYCODE_ENTER) {
+
+                    InputMethodManager inputManager = (InputMethodManager)
+                            getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                    inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                            InputMethodManager.HIDE_NOT_ALWAYS);
+
+
+                    etSearchPlaces.setVisibility(View.GONE);
+                    ibSearch.setVisibility(View.VISIBLE);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
+            setActionBar(toolbar);
+            //checkIfFirstTimeRunning();
         }
 
-       // checkIfFirstTimeRunning();
+    @Override
+    public void onBackPressed() {
+        etSearchPlaces.setVisibility(View.GONE);
+        ibSearch.setVisibility(View.VISIBLE);
+        super.onBackPressed();
     }
 
     private void checkIfFirstTimeRunning() {
         boolean firstTime = mSettingsManager.getIsUsersFirstTimeRunningApp();
-        //TODO always be true for a while.
 
+        // user has logged on already
         if(!firstTime) return;
 
+        //TODO Do this in a ASyncTask
         log("firstTime checking if We should load up db");
         String next[] = {};
         List<String[]> list = new ArrayList<String[]>();
@@ -127,6 +187,7 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
             while(true) {
                 next = reader.readNext();
                 if(next != null) {
+
                     list.add(next);
                 } else {
                     break;
@@ -135,7 +196,18 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }finally {
-            Log.d(TAG, list.get(0)[2]);
+            for(String[] line : list){
+                WeatherLocation location = new WeatherLocation();
+                // zipcode
+                location.setZipcode(line[0]);
+                location.setState(line[1]);
+                location.setCity(line[2]);
+                Log.d(TAG, location.getCity());
+                dbHelper.addLocation(location);
+
+            }
+            // only do this once.
+            mSettingsManager.setIsUsersFirstTimeRunningApp(true);
 
         }
 
@@ -144,32 +216,31 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
     }
 
     public void updateUI() {
-        List<WeatherLocation> savedList = dbHelper.getAllWeatherLocations();
-        // TESTING PURPOSES - savedList.add(new WeatherLocation(72, "04005", "Biddeford"));
-        if(savedList != null)
-        if(savedList.size() > 0){
-            mWeatherLocationAdapter = new WeatherLocationAdapter(savedList, this, R.layout.view_weather_location);
+        // check if we got any in the DB if so update them
+        List<WeatherLocation> weatherLocs = dbHelper.getAllWeatherLocations();
+        if(weatherLocs != null){
+            for(WeatherLocation weatherLoc : weatherLocs){
+                getTemp(weatherLoc, false);
+            }
+            mWeatherLocationAdapter = new WeatherLocationAdapter(weatherLocs, this, R.layout.view_weather_location);
             lvLocations.setAdapter(mWeatherLocationAdapter);
+            invalidateAdapter();
         }
     }
 
 
-
-
-
-    private void getTemp(WeatherLocation weatherLocation) {
+    /**
+     * Get the temperature with a JSONWeatherTask
+     *
+     * @param weatherLocation - built up weather location to get the temperature.
+     * @param changeCurrentSelection - whether or not we are changing the current selection - we dont want to change current selection if its the activity firing up.
+     */
+    private void getTemp(WeatherLocation weatherLocation, boolean changeCurrentSelection) {
         JSONWeatherTask task;
-        // there was no zipcode so we instruct to handle like its from town and state
-        if(weatherLocation.getZipcode().equals(SettingsManager.NOTHING_SAVED)){
-            log("get temp there was no zipcode");
-            task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,true);
-        }
-        // there was zipcode
-        else {
-            log("get temp there was a zipcode");
-            task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,true);
+        log("town we saved that we need for url is " + weatherLocation.getCity());
 
-        }
+        task = new JSONWeatherTask(this,mSettingsManager,mGoogleApiClient, weatherLocation,changeCurrentSelection);
+
         task.execute();
     }
 
@@ -177,9 +248,15 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
     protected void onStart() {
         super.onStart();
         initReceivers();
-        updateUI();
+        //updateUI();
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        updateUI();
+        invalidateAdapter();
+    }
 
     private void initReceivers() {
         registerReceiver(brDegree, new IntentFilter(Consts.BROADCAST_DEGREE));
@@ -198,5 +275,26 @@ public class MiDigitalWatchFaceCompanionConfigActivity extends Activity {
 
     public void invalidateAdapter() {
         mWeatherLocationAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity_menu_layout, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Toast.makeText(this, "update items", Toast.LENGTH_LONG).show();
+                return true;
+            case R.id.toolbar:
+                Toast.makeText(this, "update items", Toast.LENGTH_LONG).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

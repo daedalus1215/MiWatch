@@ -17,6 +17,7 @@
     <!-- Internet Permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
 
     <provider
         android:authorities="com.miproducts.miwatch.weatherLocations"
@@ -26,13 +27,13 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.NoTitleBar" >
+        android:theme="@style/AppTheme" >
 
         <activity
             android:name=".MiDigitalWatchFaceCompanionConfigActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustPan"
+            android:windowSoftInputMode="adjustResize"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -69,7 +70,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".AddWeatherLocation"></activity>
-
+        <activity android:name=".AutoComplete.TestAutoCompleteActivity"></activity>
 
 
     </application>
